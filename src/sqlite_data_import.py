@@ -33,15 +33,20 @@ class AacDataImporter:
         self.csv_file = csv_file
 
     # call script to drop and create sqlite tables
-    def create_database(self):
+    @staticmethod
+    def create_database():
         sqlite_create_tables.drop_and_create_tables()
 
     def get_or_insert_relation(self, table, column, value, cache):
+        """Checks for an existing ID or Inserts a new
+        row if it does not exist. Returns the foreign key ID for the
+        animal table"""
         if not value:
             return None
         # trim whitespace
         value = value.strip()
 
+        # check for cached value
         if value in cache:
             # return the foreign key id
             return cache[value]
@@ -60,6 +65,12 @@ class AacDataImporter:
         return foreign_key
 
     def import_data(self):
+        """Imports data from AAC dataset CSV into the sqlite database.
+        Drops and Creates animal, animal_type, breed, outcome_type, and
+        sex_upon_outcome tables."""
+        # drop (if exists and create sqlite tables
+        self.create_database()
+
         # open csv file for reading, will close after with block
         with open(self.csv_file, mode="r", encoding="UTF-8") as file:
             reader = csv.DictReader(file)
@@ -134,7 +145,7 @@ class AacDataImporter:
                         row["location_long"],
                         row["age_upon_outcome_in_weeks"]
                     ))
-                
+        # commit the transaction and close sqlite connection
         self.connection.commit()
         self.connection.close()
 
