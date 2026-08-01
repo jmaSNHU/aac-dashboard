@@ -13,23 +13,20 @@
 import sqlite3
 
 
-# create a connection
-# will create database file if it does not exist
-connection = sqlite3.connect("test.db")
-
-cursor = connection.cursor()
 
 # drop tables 
-cursor.execute("DROP TABLE IF EXISTS animals")
-cursor.execute("DROP TABLE IF EXISTS animal_type")
-cursor.execute("DROP TABLE IF EXISTS breed")
-cursor.execute("DROP TABLE IF EXISTS outcome_type")
-cursor.execute("DROP TABLE IF EXISTS sex_upon_outcome")
+def drop_tables(cursor):
+    cursor.execute("DROP TABLE IF EXISTS animals")
+    cursor.execute("DROP TABLE IF EXISTS animal_type")
+    cursor.execute("DROP TABLE IF EXISTS breed")
+    cursor.execute("DROP TABLE IF EXISTS outcome_type")
+    cursor.execute("DROP TABLE IF EXISTS sex_upon_outcome")
 
 # create the animals table
-# normalized columns: animal_type, breed, outcome_type, sex_upon_outcome
-cursor.execute(
-        '''CREATE TABLE IF NOT EXISTS animals (
+# foreign key columns: animal_type_id, breed_id, outcome_type_id, sex_upon_outcome_id
+def create_animal_table(cursor):
+    cursor.execute(
+        '''CREATE TABLE IF NOT EXISTS animal (
             rec_num INTEGER PRIMARY KEY AUTOINCREMENT,
             age_upon_outcome TEXT,
             animal_id TEXT,
@@ -47,37 +44,59 @@ cursor.execute(
             location_long NUMERIC,
             age_upon_outcome_in_weeks NUMERIC
             )        
-''')
+    ''')
 
-cursor.execute(
+# create the animal_type table
+def create_animal_type_table(cursor):
+    cursor.execute(
         '''CREATE TABLE IF NOT EXISTS animal_type(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             type TEXT
         )        
-''')
+    ''')
 
-cursor.execute(
+# create the breed table
+def create_breed_table(cursor):
+    cursor.execute(
         '''CREATE TABLE IF NOT EXISTS breed(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             breed_name TEXT
         )
-''')
+    ''')
 
-cursor.execute(
+# create the outcome_type table
+def create_outcome_type_table(cursor):
+    cursor.execute(
         '''CREATE TABLE IF NOT EXISTS outcome_type(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             outcome_type TEXT
         ) 
-''')
+    ''')
 
-cursor.execute(
+# create the sex_upon_outcome table
+def create_sex_upon_outcome_table(cursor):
+    cursor.execute(
         '''CREATE TABLE IF NOT EXISTS sex_upon_outcome(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             sex TEXT
         )
-''')
+    ''')
 
-# commit transactions and create all tables
-connection.commit()
+def drop_and_create_tables():
+    # create a connection
+    # will create database file if it does not exist
+    connection = sqlite3.connect("test.db")
 
-connection.close()
+    cursor = connection.cursor()
+
+    drop_tables(cursor)
+    create_animal_table(cursor)
+    create_animal_type_table(cursor)
+    create_breed_table(cursor)
+    create_outcome_type_table(cursor)
+    create_sex_upon_outcome_table(cursor)
+
+    # commit transactions and create all tables
+    connection.commit()
+
+    connection.close()
