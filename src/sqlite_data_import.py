@@ -1,9 +1,12 @@
-# python script to DROP and CREATE 
+# sqlite_data_import.py
+# python script to DROP and CREATE
 # sqlite tables for the aac database
 #
 # Jacob Ard
 # SNHU CS-499 Capstone
 # Enhancement: Databases
+# Script use
+# July 31, 2026
 
 
 # import sqlite3 module
