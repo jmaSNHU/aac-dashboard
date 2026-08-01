@@ -8,7 +8,7 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 def main():
-    init_db();
+    init_db()
 
     db = SessionLocal()
     try:
