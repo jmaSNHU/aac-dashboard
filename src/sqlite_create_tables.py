@@ -1,6 +1,9 @@
 # python script to DROP and CREATE 
 # sqlite tables for the aac database
 #
+# Run this script to initialize the SQLite database
+# for the AAC outcomes dashboar
+#
 # Jacob Ard
 # SNHU CS-499 Capstone
 # Enhancement: Databases
