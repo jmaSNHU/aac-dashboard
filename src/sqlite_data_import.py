@@ -65,52 +65,34 @@ class AacDataImporter:
             reader = csv.DictReader(file)
 
             for row in reader:
-                # trim white space from values
-                #rec_num = row["rec_num"].strip()
-                #age_upon_outcome = row["age_upon_outcome"].strip()
-                #animal_id = row["animal_id"].strip()
-                #animal_type = row["animal_type"].strip()
-                #breed = row["breed"].strip()
-                #color = row["color"].strip()
-                #date_of_birth = row["date_of_birth"].strip()
-                #datetime = row["datetime"].strip()
-                #monthyear = row["monthyear"].strip()
-                #name = row["name"].strip()
-                #outcome_subtype = row["outcome_subtype"].strip()
-                #outcome_type = row["outcome_type"].strip()
-                #sex_upon_outcome = row["sex_upon_outcome"].strip()
-                #location_lat = row["location_lat"].strip()
-                #location_long = row["location_long"].strip()
-                #age_upon_outcome_in_weeks = row["age_upon_outcome_in_weeks"].strip()
-                
                 # strip whitespace from all values in the row
                 row = {col: val.strip() for col, val in row.items()}
                 
-                # get foreign keys and/or create sub relational data
+                # query or create animal_type and get ID
                 animal_type_id = self.get_or_insert_relation(
                         "animal_type",
                         "type", 
                         row["animal_type"], 
                         self.animal_type_cache)
 
+                # query or create breed and get ID
                 breed_id = self.get_or_insert_relation(
                         "breed",
                         "breed_name",
                         row["breed"],
                         self.breed_cache)
-
+                # query or create outcome_type and get ID
                 outcome_type_id = self.get_or_insert_relation(
                         "outcome_type",
                         "outcome_type",
                         row["outcome_type"],
                         self.outcome_type_cache)
-
+                # query or create sex_upon_outcome and get ID
                 sex_upon_outcome_id = self.get_or_insert_relation(
                         "sex_upon_outcome",
                         "sex",
                         row["sex_upon_outcome"],
                         self.sex_upon_outcome_cache)
-
 
                 # insert row into the animal table
                 self.cursor.execute("""
