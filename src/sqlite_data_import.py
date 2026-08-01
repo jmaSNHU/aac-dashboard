@@ -85,7 +85,7 @@ class AacDataImporter:
                 # query or create animal_type and get ID
                 animal_type_id = self.get_or_insert_relation(
                         "animal_type",
-                        "type", 
+                        "animal_type",
                         row["animal_type"], 
                         self.animal_type_cache)
 
@@ -111,7 +111,7 @@ class AacDataImporter:
                 # insert row into the animal table
                 self.cursor.execute("""
                     INSERT INTO animal(
-                        rec_num, 
+                        id, 
                         age_upon_outcome, 
                         animal_id, 
                         animal_type_id,
