@@ -16,7 +16,7 @@ import sqlite3
 
 # drop tables 
 def drop_tables(cursor):
-    cursor.execute("DROP TABLE IF EXISTS animals")
+    cursor.execute("DROP TABLE IF EXISTS animal")
     cursor.execute("DROP TABLE IF EXISTS animal_type")
     cursor.execute("DROP TABLE IF EXISTS breed")
     cursor.execute("DROP TABLE IF EXISTS outcome_type")
@@ -35,7 +35,7 @@ def create_animal_table(cursor):
             color TEXT,
             date_of_birth TEXT,
             datetime TEXT,
-            monthyear TEXT,
+            month_year TEXT,
             name TEXT,
             outcome_subtype TEXT,
             outcome_type_id INTEGER, 

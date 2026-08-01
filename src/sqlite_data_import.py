@@ -97,17 +97,42 @@ class AacDataImporter:
                 # insert row into the animal table
                 self.cursor.execute("""
                     INSERT INTO animal(
-                        rec_num, age_upon_outcome, animal_id, animal_type_id,
-                        breed_id, color, date_of_birth, datetime, monthyear,
-                        name, outcome_subtype, outcome_type_id, sex_upon_outcome_id,
-                        location_lat, location_long, age_upon_outcome_in_weeks)
+                        rec_num, 
+                        age_upon_outcome, 
+                        animal_id, 
+                        animal_type_id,
+                        breed_id, 
+                        color, 
+                        date_of_birth, 
+                        datetime, 
+                        month_year,
+                        name, 
+                        outcome_subtype, 
+                        outcome_type_id, 
+                        sex_upon_outcome_id,
+                        location_lat, 
+                        location_long, 
+                        age_upon_outcome_in_weeks)
 
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, ( row["rec_num"], row["age_upon_outcome"], row["animal_id"],
-                          animal_type_id, breed_id, row["color"], row["date_of_birth"],
-                          row["datetime"], row["monthyear"], row["name"], row["outcome_subtype"],
-                          outcome_type_id, sex_upon_outcome_id, row["location_lat"], row["location_long"],
-                          row["age_upon_outcome_in_weeks"]
+                    """,
+                        (
+                        row["rec_num"],
+                        row["age_upon_outcome"],
+                        row["animal_id"],
+                        animal_type_id,
+                        breed_id,
+                        row["color"],
+                        row["date_of_birth"],
+                        row["datetime"],
+                        row["monthyear"],
+                        row["name"],
+                        row["outcome_subtype"],
+                        outcome_type_id,
+                        sex_upon_outcome_id,
+                        row["location_lat"],
+                        row["location_long"],
+                        row["age_upon_outcome_in_weeks"]
                     ))
                 
         self.connection.commit()
