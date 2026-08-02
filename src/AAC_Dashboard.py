@@ -1,7 +1,6 @@
 # Jacob Ard
 # CS-340 Project 2
 
-# Setup the Jupyter version of Dash
 from dash import Dash
 
 # Configure the necessary Python module imports for dashboard components
@@ -22,34 +21,42 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-#### FIX ME #####
-# change animal_shelter and AnimalShelter to match your CRUD Python module file name and class name
-from CRUD_Python_Module import AnimalShelter
+from model.base import Base
+from database import engine, SessionLocal
+from model import Animal, AnimalType, Breed, OutcomeType, SexUponOutcome
+from sqlalchemy import select
+from sqlalchemy.orm import joinedload
+from dataclasses import dataclass, fields
 
 ###########################
 # Data Manipulation / Model
 ###########################
 
-# constructor args for MongoDB connection
-username = "aacuser"
-password = "#cs340SNHU2026"
-host = "localhost"
-port = 27017
-database = "aac"
-collection = "animals"
+Base.metadata.create_all(bind=engine)
 
 # Connect to database via CRUD Module
-db = AnimalShelter(username, password, host, port, database, collection)
+db = SessionLocal()
 
 # class read method must support return of list object and accept projection json input
 # sending the read method an empty document requests all documents be returned
-df = pd.DataFrame.from_records(db.read({}))
 
+BASE_QUERY = select(Animal).options(
+    joinedload(Animal.animal_type),
+    joinedload(Animal.breed),
+    joinedload(Animal.outcome_type),
+    joinedload(Animal.sex_upon_outcome)
+)
+df = pd.read_sql(BASE_QUERY, con=engine)
+
+DROP_COLS = ['animal_type_id',
+             'breed_id', 'id', 'id_1', 'id_2', 'id_3', 'id_4',
+             'outcome_type_id',
+             'sex_upon_outcome_id']
 # MongoDB v5+ is going to return the '_id' column and that is going to have an 
 # invlaid object type of 'ObjectID' - which will cause the data_table to crash - so we remove
 # it in the dataframe here. The df.drop command allows us to drop the column. If we do not set
 # inplace=True - it will reeturn a new dataframe that does not contain the dropped column(s)
-df.drop(columns=['_id'],inplace=True)
+df.drop(columns=DROP_COLS,inplace=True)
 
 ## Debug
 # print(len(df.to_dict(orient='records')))
@@ -132,7 +139,7 @@ app.layout = html.Div([
                 }
             ),
             # App title
-            html.B(html.H1('SNHU CS-340 Dashboard'), style={'flex': '1', 'text-align': 'center'}),
+            html.B(html.H1('Austin Animal Centers'), style={'flex': '1', 'text-align': 'center'}),
             # display unique identifier (my name) on the right
             html.H2('Jacob Ard', id='unique-identifier', style={'flex': '1', 'text-align': 'right'}),
         ],
@@ -161,7 +168,7 @@ app.layout = html.Div([
     html.Hr(),
     dash_table.DataTable(
         id='datatable-id',               
-        columns=[{"name": i, "id": i, "deletable": False, "selectable": True} for i in df.columns],
+        columns=[{"name": i, "id": i, "deletable": False, "selectable": True} for i in sorted(df.columns)],
         data=df.to_dict('records'),
         # enable single row selection
         row_selectable='single',
@@ -218,38 +225,81 @@ app.layout = html.Div([
               Output('datatable-id', 'selected_rows')],
               [Input('filter-type', 'value')])
 def update_dashboard(filter_type):
-####TODO: refactor filters so that it is not tightly couple to NoSQL syntax####
-    filters = {}
+    # filter by water rescue
     if filter_type == 'water-rescue':
-        filters = {
-            "breed": {"$in": WATER_RESCUE_BREEDS}, 
-            "sex_upon_outcome": WATER_RESCUE_SEX, 
-            "age_upon_outcome_in_weeks": {"$gte": WATER_RESCUE_MIN_AGE, "$lte": WATER_RESCUE_MAX_AGE} 
-        }
+        query_where = (BASE_QUERY
+        # Join related tables
+        .join(Animal.animal_type)
+        .join(Animal.breed)
+        .join(Animal.sex_upon_outcome)
+        .join(Animal.outcome_type)
+        .where(
+            # where breed in Lab Ret, Chesapeke Bay, Newfoundland
+            Animal.breed.has(
+                Breed.breed_name
+                .in_(WATER_RESCUE_BREEDS)),
+            # And AGE between 26 & 156 weeks
+            Animal.age_upon_outcome_in_weeks >= WATER_RESCUE_MIN_AGE,
+            Animal.age_upon_outcome_in_weeks <= WATER_RESCUE_MAX_AGE,
+            # And sex is Intact Female
+            Animal.sex_upon_outcome.has(
+                SexUponOutcome.sex == WATER_RESCUE_SEX
+            )
+        ))
+
     elif filter_type == 'mountain-rescue':
-        filters = {
-            "breed": {"$in": MOUNTAIN_RESCUE_BREEDS}, 
-            "sex_upon_outcome": MOUNTAIN_RESCUE_SEX, 
-            "age_upon_outcome_in_weeks": {"$gte": MOUNTAIN_RESCUE_MIN_AGE, "$lte": MOUNTAIN_RESCUE_MAX_AGE} 
-        }
+        query_where = (BASE_QUERY
+        .join(Animal.animal_type)
+        .join(Animal.breed)
+        .join(Animal.sex_upon_outcome)
+        .join(Animal.outcome_type)
+        .where(
+            # Where breed is german shep, alaskan malamute, old eng. sheepdog, husky, rottweiler
+            Animal.breed.has(
+                Breed.breed_name
+                .in_(MOUNTAIN_RESCUE_BREEDS)),
+            # and age between 26 & 156 weeks
+            Animal.age_upon_outcome_in_weeks >= MOUNTAIN_RESCUE_MIN_AGE,
+            Animal.age_upon_outcome_in_weeks <= MOUNTAIN_RESCUE_MAX_AGE,
+            # and sex is Intact Male
+            Animal.sex_upon_outcome.has(
+                SexUponOutcome.sex == MOUNTAIN_RESCUE_SEX
+            )
+        ))
+    # filter disaster rescue
     elif filter_type == 'disaster-rescue':
-        filters = {
-            "breed": {"$in": DISASTER_RESCUE_BREEDS}, 
-            "sex_upon_outcome": DISASTER_RESCUE_SEX, 
-            "age_upon_outcome_in_weeks": {"$gte": DISASTER_RESCUE_MIN_AGE, "$lte": DISASTER_RESCUE_MAX_AGE} 
-        }
+        query_where = (BASE_QUERY
+        .join(Animal.animal_type)
+        .join(Animal.breed)
+        .join(Animal.sex_upon_outcome)
+        .join(Animal.outcome_type)
+        .where(
+            # where breed is dobermann, g. shepard, gold ret., bloodhound, rottweiler
+            Animal.breed.has(
+                Breed.breed_name
+                .in_(DISASTER_RESCUE_BREEDS)),
+            # and age between 20 & 300 weeks
+            Animal.age_upon_outcome_in_weeks >= DISASTER_RESCUE_MIN_AGE,
+            Animal.age_upon_outcome_in_weeks <= DISASTER_RESCUE_MAX_AGE,
+            # andsex is intact male
+            Animal.sex_upon_outcome.has(
+                SexUponOutcome.sex == DISASTER_RESCUE_SEX
+            )
+        ))
     else:
-        filters = {}
-        
-    # pass filters to CRUD module's read method
-    data = pd.DataFrame.from_records(db.read(filters))
+        # else use base query
+        query_where = BASE_QUERY
+
+    # pass sql statement with filters to db.scalars method to return list of Animals
+    #data = pd.DataFrame.from_records(db.scalars(query_where).all())
+    data = pd.read_sql(query_where, con=engine)
     # drop _id column to prevent data table crash
-    data.drop(columns=['_id'],inplace=True)
-    
-    
+    data.drop(columns=DROP_COLS,inplace=True)
+
+
     # return the datatable's new data
     # return selected_index[0] to avoid an Index out of range error
-    return data.to_dict('records'), [0] 
+    return data.to_dict('records'), [0]
 
 
 # Display the breeds of animal based on quantity represented in
@@ -282,7 +332,7 @@ def update_graphs(view_data, chart_type):
 
 # creates and returns a plotly pie chart figure
 def create_pie_chart(data):
-    pie_chart = px.pie(data, names='breed', title='Animals by Breed')
+    pie_chart = px.pie(data, names='breed_name', title='Animals by Breed')
     pie_chart.update_traces(
         # display breed name, count and percentage on hover
         hovertemplate="<b>%{label}</b><br>Count: %{value}<br>Percent: %{percent}",
@@ -298,7 +348,7 @@ def create_pie_chart(data):
 def create_bar_chart(data):
     # create horizontal bar chart w/ breed on the y-axis
     # text_auto adds text labels to the histogram's bars
-    bar_chart = px.histogram(data, y='breed', title='Animals by Breed', text_auto=True)
+    bar_chart = px.histogram(data, y='breed_name', title='Animals by Breed', text_auto=True)
     # set x-axis title, display only discrete values 
     bar_chart.update_xaxes(title="Count", tickformat="d")
     # set y-axis title
@@ -348,8 +398,8 @@ def update_map(view_data, index):
         row = index[0]
         
     # set lat/long variable to center the map and set marker position
-    latitude=dff.iloc[row,13]
-    longitude=dff.iloc[row,14]
+    latitude=dff.iloc[row, 8]
+    longitude=dff.iloc[row,9]
     return [
         dl.Map(style={'width': '1000px', 'height': '500px'}, center=[latitude,longitude], zoom=10, children=[
             dl.TileLayer(id="base-layer-id"),
