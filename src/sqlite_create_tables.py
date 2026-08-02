@@ -87,7 +87,7 @@ def create_sex_upon_outcome_table(cursor):
 def drop_and_create_tables():
     # create a connection
     # will create database file if it does not exist
-    connection = sqlite3.connect("test.db")
+    connection = sqlite3.connect("aac.db")
 
     cursor = connection.cursor()
 

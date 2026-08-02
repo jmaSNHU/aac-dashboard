@@ -14,6 +14,5 @@ from sqlite_data_import import AacDataImporter
 # drop aac database tables if exists,
 # create aac database,
 # import aac dataset and create relational subtables
-# TODO: change test.db to aac.db
-importer = AacDataImporter("test.db", "aac_shelter_outcomes.csv")
+importer = AacDataImporter("aac.db", "aac_shelter_outcomes.csv")
 importer.import_data()
