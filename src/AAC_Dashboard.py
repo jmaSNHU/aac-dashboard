@@ -34,13 +34,15 @@ from dataclasses import dataclass, fields
 
 Base.metadata.create_all(bind=engine)
 
-# Connect to database via CRUD Module
+# use session factory to create database session
 db = SessionLocal()
 
 # class read method must support return of list object and accept projection json input
 # sending the read method an empty document requests all documents be returned
 
+# base query fetch from the animal table without filters
 BASE_QUERY = select(Animal).options(
+    # load relational date into Animal objects
     joinedload(Animal.animal_type),
     joinedload(Animal.breed),
     joinedload(Animal.outcome_type),
@@ -48,29 +50,19 @@ BASE_QUERY = select(Animal).options(
 )
 df = pd.read_sql(BASE_QUERY, con=engine)
 
+# ID columns to remove from the datatable view
 DROP_COLS = ['animal_type_id',
              'breed_id', 'id', 'id_1', 'id_2', 'id_3', 'id_4',
              'outcome_type_id',
              'sex_upon_outcome_id']
-# MongoDB v5+ is going to return the '_id' column and that is going to have an 
-# invlaid object type of 'ObjectID' - which will cause the data_table to crash - so we remove
-# it in the dataframe here. The df.drop command allows us to drop the column. If we do not set
-# inplace=True - it will reeturn a new dataframe that does not contain the dropped column(s)
+
+# remove ID columns from the current dataframe
 df.drop(columns=DROP_COLS,inplace=True)
-
-## Debug
-# print(len(df.to_dict(orient='records')))
-# print(df.columns)
-
 
 #########################
 # Dashboard Layout / View
 #########################
 app = Dash(__name__)
-
-#FIX ME Place the HTML image tag in the line below into the app.layout code according to your design
-#FIX ME Also remember to include a unique identifier such as your name or date
-#html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()))
 
 #############################################
 # Configuration Variables
@@ -78,7 +70,7 @@ app = Dash(__name__)
 # ideally, these could be stored in a seperate .env file
 #############################################
 
-#FIX ME Add in Grazioso Salvare’s logo
+# logo img
 IMAGE_FILENAME = 'Grazioso Salvare Logo.png' # replace with your own image
 ENCODED_IMAGE = base64.b64encode(open(IMAGE_FILENAME, 'rb').read())
 
@@ -99,8 +91,9 @@ CHART_OPTIONS = [
     {'label': 'Bar Chart', 'value': 'bar'}
 ]
 
+## Filters
+
 # define the list of acceptable water rescue breeds
-#### TODO: refactor breed, sex, and ages with an object-oriented approach ####
 WATER_RESCUE_BREEDS = ["Labrador Retriever Mix", "Chesapeake Bay Retriever", "Newfoundland"]
 MOUNTAIN_RESCUE_BREEDS = ["German Shepherd", "Alaskan Malamute", "Old English Sheepdog", "Siberian Husky", "Rottweiler"]
 # note: the dataset refers to the Doberman Pinscher as "Doberman Pinsch"
@@ -249,6 +242,7 @@ def update_dashboard(filter_type):
 
     elif filter_type == 'mountain-rescue':
         query_where = (BASE_QUERY
+        # join related tables
         .join(Animal.animal_type)
         .join(Animal.breed)
         .join(Animal.sex_upon_outcome)
@@ -269,6 +263,7 @@ def update_dashboard(filter_type):
     # filter disaster rescue
     elif filter_type == 'disaster-rescue':
         query_where = (BASE_QUERY
+        # join related tables
         .join(Animal.animal_type)
         .join(Animal.breed)
         .join(Animal.sex_upon_outcome)
@@ -291,7 +286,6 @@ def update_dashboard(filter_type):
         query_where = BASE_QUERY
 
     # pass sql statement with filters to db.scalars method to return list of Animals
-    #data = pd.DataFrame.from_records(db.scalars(query_where).all())
     data = pd.read_sql(query_where, con=engine)
     # drop _id column to prevent data table crash
     data.drop(columns=DROP_COLS,inplace=True)
@@ -404,14 +398,14 @@ def update_map(view_data, index):
         dl.Map(style={'width': '1000px', 'height': '500px'}, center=[latitude,longitude], zoom=10, children=[
             dl.TileLayer(id="base-layer-id"),
             # Marker with tool tip and popup
-            # Column 13 and 14 define the grid-coordinates for the map
-            # Column 4 defines the breed for the animal
-            # Column 9 defines the name of the animal
+            # Column 8 and 9 define the grid-coordinates for the map
+            # Column 3 defines the breed for the animal
+            # Column 11 defines the name of the animal
             dl.Marker(position=[latitude, longitude], children=[
-                dl.Tooltip(dff.iloc[row,4]),
+                dl.Tooltip(dff.iloc[row,3]),
                 dl.Popup([
                     html.H1("Animal Name"),
-                    html.P(dff.iloc[row,9])
+                    html.P(dff.iloc[row,11])
                 ])
             ])
         ])
@@ -429,6 +423,5 @@ def reset_dropdown_menu(n_clicks):
     return None
 
 # Run app and display result in jupyterlab mode, note, if you have previously run a prior app, the default port of 8050 may not be available, if so, try setting an alternate port.
-#app.run_server() 
 if __name__ == "__main__":
     app.run(debug=True)
