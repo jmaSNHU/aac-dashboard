@@ -399,13 +399,13 @@ def update_map(view_data, index):
             dl.TileLayer(id="base-layer-id"),
             # Marker with tool tip and popup
             # Column 8 and 9 define the grid-coordinates for the map
-            # Column 3 defines the breed for the animal
-            # Column 11 defines the name of the animal
+            # Column 12 defines the breed for the animal
+            # Column 11 defines the type of the animal
             dl.Marker(position=[latitude, longitude], children=[
-                dl.Tooltip(dff.iloc[row,3]),
+                dl.Tooltip(dff.iloc[row,11]),
                 dl.Popup([
-                    html.H1("Animal Name"),
-                    html.P(dff.iloc[row,11])
+                    html.H1("Animal Breed"),
+                    html.P(dff.iloc[row,12])
                 ])
             ])
         ])
