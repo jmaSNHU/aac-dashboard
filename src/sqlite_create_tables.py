@@ -29,7 +29,7 @@ def drop_tables(cursor):
 def create_animal_table(cursor):
     cursor.execute(
         '''CREATE TABLE IF NOT EXISTS animal (
-            rec_num INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             age_upon_outcome TEXT,
             animal_id TEXT,
             animal_type_id INTEGER,
@@ -53,7 +53,7 @@ def create_animal_type_table(cursor):
     cursor.execute(
         '''CREATE TABLE IF NOT EXISTS animal_type(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            type TEXT
+            animal_type TEXT
         )        
     ''')
 
@@ -87,7 +87,7 @@ def create_sex_upon_outcome_table(cursor):
 def drop_and_create_tables():
     # create a connection
     # will create database file if it does not exist
-    connection = sqlite3.connect("test.db")
+    connection = sqlite3.connect("aac.db")
 
     cursor = connection.cursor()
 
