@@ -2,9 +2,20 @@
 Enhancement for CS-340's AAC Outcomes Dashboard. Replaces the original MongoDB database with SQLite and normalizes the Austin Animal Center's outcomes dataset.
 
 
-# TODOs:
-# Housekeeping:
-    - Reorganize data import scripts by moving sqlite_* scripts into a 'scripts' folder
-    - Remove or re-name 'test_main.py' file
-    - Write unit tests
-    - Write a generic 'CRUD' Module to replace the old MongoDB CRUD module
+## Getting Started
+
+To run the code, you must first activate the Python virtual environment included in the repository:
+
+```source myenv/bin/activate```
+
+## Creating the Database and Importing the AAC dataset (optional):
+
+This AAC database is already included in this repository. If you delete it or need to re-create it, run the following script in the ```/src``` directory:
+
+```python import_data.py```
+
+## Running the AAC Dashboard Application:
+
+Run the ```AAC_Dashboard.py``` script:
+
+```python AAC_Dashboard.py```
