@@ -13,7 +13,7 @@ To run the code, you must first activate the Python virtual environment included
 
 ## Creating the Database and Importing the AAC dataset (optional):
 
-This AAC database is already included in this repository. If you delete it or need to re-create it, run the following script in the ```/src``` directory:
+The AAC database is already included in this repository. If you delete it or need to re-create it, run the following script in the ```/src``` directory:
 
 ```python import_data.py```
 
