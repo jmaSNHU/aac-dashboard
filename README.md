@@ -1,6 +1,6 @@
 ![AAC Outcomes Dashboard](https://jmasnhu.github.io/images/aac-dashboard.jpg)
 
-# aac-dashboard
+# Austin Animal Center Outcomes Dashboard
 Enhancement for CS-340's AAC Outcomes Dashboard that replaces the original MongoDB database with SQLite and normalizes the Austin Animal Center's outcomes dataset. This project is built using Python and the SQLAlchemy ORM for data access on the backend. The frontend dashboard is implemented with the Plotly Dash framework.
 
 
